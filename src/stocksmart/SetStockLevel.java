@@ -5,6 +5,13 @@
  */
 package stocksmart;
 
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.persistence.EntityManagerFactory;
+import javax.persistence.Persistence;
+import javax.swing.table.DefaultTableModel;
+
 /**
  *
  * @author Holmesy
@@ -16,6 +23,23 @@ public class SetStockLevel extends javax.swing.JFrame {
      */
     public SetStockLevel() {
         initComponents();
+        bindTable();
+    }
+    
+    private void bindTable(){ 
+        EntityManagerFactory emf = Persistence.createEntityManagerFactory("StockSmartPU");
+        StockJpaController sjc = new StockJpaController(emf);
+        List<Stock> stockList = sjc.findStockEntities();
+        DefaultTableModel model = new DefaultTableModel();
+        model.setColumnIdentifiers(new String[]{"Id", "ItemCode", "ItemName","Quantity","MinRequired"});
+        for (Stock stock: stockList){
+            model.addRow(new String[]{stock.getId().toString(),stock.getItemcode(),stock.getItemname(),stock.getItemquant(),stock.getMinitemrequired()});
+        }     
+        jTable1.setModel(model);
+        
+       
+        
+        
     }
 
     /**
@@ -57,6 +81,11 @@ public class SetStockLevel extends javax.swing.JFrame {
                 "Title 1", "Title 2", "Title 3", "Title 4"
             }
         ));
+        jTable1.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                jTable1MouseClicked(evt);
+            }
+        });
         jScrollPane1.setViewportView(jTable1);
 
         jLabel2.setText("Item code");
@@ -68,6 +97,11 @@ public class SetStockLevel extends javax.swing.JFrame {
         jLabel5.setText("Min required for order:");
 
         jButton1.setText("Edit");
+        jButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton1ActionPerformed(evt);
+            }
+        });
 
         jButton2.setText("Go back");
 
@@ -82,29 +116,32 @@ public class SetStockLevel extends javax.swing.JFrame {
                         .addComponent(jLabel1))
                     .addGroup(layout.createSequentialGroup()
                         .addGap(94, 94, 94)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(layout.createSequentialGroup()
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                                    .addGroup(layout.createSequentialGroup()
+                                        .addComponent(jLabel4)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                        .addComponent(jTextField3, javax.swing.GroupLayout.PREFERRED_SIZE, 62, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addGap(36, 36, 36))
+                                    .addGroup(layout.createSequentialGroup()
+                                        .addComponent(jLabel2)
+                                        .addGap(18, 18, 18)
+                                        .addComponent(jTextField1)
+                                        .addGap(28, 28, 28)))
+                                .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 56, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(45, 45, 45)
+                                .addComponent(jButton2))
                             .addGroup(layout.createSequentialGroup()
                                 .addComponent(jLabel3)
                                 .addGap(18, 18, 18)
-                                .addComponent(jTextField2, javax.swing.GroupLayout.PREFERRED_SIZE, 70, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(jLabel4)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                .addComponent(jTextField3))
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(jLabel2)
-                                .addGap(18, 18, 18)
-                                .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, 70, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                        .addGap(36, 36, 36)
-                        .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 56, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(45, 45, 45)
-                        .addComponent(jButton2))
+                                .addComponent(jTextField2, javax.swing.GroupLayout.PREFERRED_SIZE, 78, javax.swing.GroupLayout.PREFERRED_SIZE))))
                     .addGroup(layout.createSequentialGroup()
                         .addGap(77, 77, 77)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(layout.createSequentialGroup()
                                 .addComponent(jLabel5)
-                                .addGap(18, 18, 18)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(jTextField4, javax.swing.GroupLayout.PREFERRED_SIZE, 81, javax.swing.GroupLayout.PREFERRED_SIZE))
                             .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))))
                 .addContainerGap(80, Short.MAX_VALUE))
@@ -140,6 +177,48 @@ public class SetStockLevel extends javax.swing.JFrame {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
+    private void jTable1MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jTable1MouseClicked
+        // TODO add your handling code here:
+        int rowNum = jTable1.getSelectedRow();
+        selectedItemId = Integer.parseInt(jTable1.getValueAt(rowNum, 0).toString());
+        EntityManagerFactory emf = Persistence.createEntityManagerFactory("StockSmartPU");
+        StockJpaController sjc = new StockJpaController(emf);
+        Stock stock =sjc.findStock(selectedItemId);
+        jTextField1.setText(stock.getItemcode());
+        jTextField2.setText(stock.getItemname());
+        jTextField3.setText(stock.getItemquant());
+        jTextField4.setText(stock.getMinitemrequired());
+        
+    }//GEN-LAST:event_jTable1MouseClicked
+
+    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+        // TODO add your handling code here:
+        
+        EntityManagerFactory emf = Persistence.createEntityManagerFactory("StockSmartPU");
+        StockJpaController sjc = new StockJpaController(emf);
+        Stock stock = sjc.findStock(selectedItemId);
+        stock.setItemcode(jTextField1.getText());
+        stock.setItemname(jTextField2.getText());
+        stock.setItemprice(jTextField3.getText());
+        stock.setMinitemrequired(jTextField4.getText());
+        try{
+        sjc.edit(stock);
+        }
+        catch (Exception ex){
+            Logger.getLogger(stockItemsForm.class.getName()).log(Level.SEVERE,null, ex);
+           
+        }
+        selectedItemId = -1;
+        bindTable();
+        
+        
+        
+        
+        
+        
+        
+    }//GEN-LAST:event_jButton1ActionPerformed
+
     /**
      * @param args the command line arguments
      */
@@ -174,7 +253,7 @@ public class SetStockLevel extends javax.swing.JFrame {
             }
         });
     }
-
+int selectedItemId;
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton jButton1;
     private javax.swing.JButton jButton2;
